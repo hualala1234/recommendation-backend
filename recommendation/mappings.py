@@ -29,7 +29,7 @@ GUIDANCE_MAPPING = {
 SCENE_MAPPING = {
     "森林": "forest",
     "海邊": "ocean",
-    "高山": "mountain",
+    "山上": "mountain",
     "小麥田": "field",
 }
 

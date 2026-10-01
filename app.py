@@ -10,6 +10,7 @@ from fastapi import (
 from dotenv import load_dotenv
 
 load_dotenv()
+from pydantic import BaseModel
 
 
 from recommendation.engine import (
@@ -21,11 +22,23 @@ from recommendation.engine import (
     get_current_recommendation,
 )
 
+from recommendation.lumi_mapping import (
+    map_lumi_to_second_assessment
+)
+
 from firebase.firestore_service import (
     get_recent_sessions,
     split_history_windows,
     get_history_snapshot,
     get_all_user_ids,
+    get_lumi_conversation,
+    create_session_from_lumi,
+    save_session_recommendation,
+    update_lumi_session_id,
+)
+
+from recommendation.lumi_handoff import (
+    prepare_recommendation_from_lumi,
 )
 
 from history.snapshot import (
@@ -660,3 +673,423 @@ def refresh_all_history(
     return (
         refresh_all_histories_and_crm()
     )
+
+@app.get(
+    "/api/lumi/debug/{user_id}/{conversation_id}"
+)
+def debug_lumi_conversation(
+    user_id: str,
+    conversation_id: str
+):
+
+    conversation = get_lumi_conversation(
+        user_id,
+        conversation_id
+    )
+
+    if conversation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="找不到 Lumi Conversation"
+        )
+
+    return {
+        "userId": user_id,
+        "conversationId": conversation_id,
+        "conversation": conversation,
+    }
+
+@app.get(
+    "/api/lumi/debug-mapping/{user_id}/{conversation_id}"
+)
+def debug_lumi_mapping(
+    user_id: str,
+    conversation_id: str
+):
+
+    # =====================================================
+    # 1. 取得 Lumi Conversation
+    # =====================================================
+
+    conversation = get_lumi_conversation(
+        user_id,
+        conversation_id
+    )
+
+    if conversation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="找不到 Lumi Conversation"
+        )
+
+
+    # =====================================================
+    # 2. 確認 Meditation Context
+    # =====================================================
+
+    meditation_context = (
+        conversation.get(
+            "meditationContext"
+        )
+    )
+
+    if not isinstance(
+        meditation_context,
+        dict
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Lumi Conversation 沒有 meditationContext"
+        )
+
+
+    # =====================================================
+    # 3. 執行 Mapping
+    # =====================================================
+
+    try:
+
+        mapped = (
+            map_lumi_to_second_assessment(
+                meditation_context
+            )
+        )
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+    # =====================================================
+    # 4. 回傳 Debug 結果
+    # =====================================================
+
+    return {
+        "userId":
+            user_id,
+
+        "conversationId":
+            conversation_id,
+
+        "originalMeditationContext":
+            meditation_context,
+
+        "mappedSecondAssessment":
+            mapped,
+    }
+
+@app.post(
+    "/api/lumi/debug-create-session/"
+    "{user_id}/{conversation_id}"
+)
+def debug_create_lumi_session(
+    user_id: str,
+    conversation_id: str
+):
+
+    # =====================================================
+    # 1. 讀取 Lumi Conversation
+    # =====================================================
+
+    conversation = (
+        get_lumi_conversation(
+            user_id,
+            conversation_id
+        )
+    )
+
+    if conversation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="找不到 Lumi Conversation"
+        )
+
+
+    # =====================================================
+    # 2. 確認 Lumi 已完成資料收集
+    # =====================================================
+
+    status = conversation.get(
+        "status"
+    )
+
+    if status != "ready":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Lumi Conversation "
+                f"尚未 ready，目前 status={status}"
+            )
+        )
+
+
+    # =====================================================
+    # 3. 取得 Meditation Context
+    # =====================================================
+
+    meditation_context = (
+        conversation.get(
+            "meditationContext"
+        )
+    )
+
+    if not isinstance(
+        meditation_context,
+        dict
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="缺少 meditationContext"
+        )
+
+
+    # =====================================================
+    # 4. Lumi -> Second Assessment Mapping
+    # =====================================================
+
+    try:
+
+        mapped_data = (
+            map_lumi_to_second_assessment(
+                meditation_context
+            )
+        )
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+    # =====================================================
+    # 5. 建立 Meditation Session
+    # =====================================================
+
+    try:
+
+        session = (
+            create_session_from_lumi(
+                user_id=user_id,
+                conversation_id=
+                    conversation_id,
+                mapped_data=
+                    mapped_data,
+            )
+        )
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+    # =====================================================
+    # 6. Debug Response
+    # =====================================================
+
+    return {
+        "status":
+            "created",
+
+        "conversationId":
+            conversation_id,
+
+        "mappedData":
+            mapped_data,
+
+        "session":
+            session,
+    }
+
+@app.post(
+    "/api/lumi/debug-save-recommendation/"
+    "{user_id}/{session_id}"
+)
+def debug_save_recommendation(
+    user_id: str,
+    session_id: str
+):
+
+    try:
+
+        # =================================================
+        # 1. 真正計算 Recommendation
+        # =================================================
+
+        recommendation_result = (
+            get_current_recommendation(
+                user_id,
+                session_id
+            )
+        )
+
+
+        # =================================================
+        # 2. 存回 Session
+        # =================================================
+
+        save_result = (
+            save_session_recommendation(
+                user_id=user_id,
+                session_id=session_id,
+                recommendation_result=
+                    recommendation_result,
+            )
+        )
+
+
+        # =================================================
+        # 3. Response
+        # =================================================
+
+        return {
+            "status":
+                "saved",
+
+            "recommendationResult":
+                recommendation_result,
+
+            "saveResult":
+                save_result,
+        }
+
+
+    except LookupError as e:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+    except Exception as e:
+
+        print(
+            "Save recommendation error:",
+            e
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
+@app.post(
+    "/api/lumi/debug-link-session/"
+    "{user_id}/{conversation_id}/{session_id}"
+)
+def debug_link_lumi_session(
+    user_id: str,
+    conversation_id: str,
+    session_id: str
+):
+
+    try:
+
+        result = (
+            update_lumi_session_id(
+                user_id=user_id,
+                conversation_id=
+                    conversation_id,
+                session_id=session_id,
+            )
+        )
+
+        return result
+
+
+    except LookupError as e:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+    except Exception as e:
+
+        print(
+            "Link Lumi session error:",
+            e
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
+
+class LumiRecommendationRequest(
+    BaseModel
+):
+    userId: str
+    conversationId: str
+
+@app.post(
+    "/api/recommendation/from-lumi"
+)
+def recommendation_from_lumi(
+    request: LumiRecommendationRequest
+):
+
+    try:
+
+        return (
+            prepare_recommendation_from_lumi(
+                user_id=request.userId,
+                conversation_id=
+                    request.conversationId,
+            )
+        )
+
+
+    except LookupError as e:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+    except Exception as e:
+
+        print(
+            "Lumi recommendation error:",
+            e
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
