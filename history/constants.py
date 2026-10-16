@@ -109,9 +109,9 @@ SCENE_CATEGORIES = [
 # =========================================================
 
 BREATHING_MAPPING = {
-    "relax_478": "four_seven_eight",
-    "box_breathing": "box_breathing",
-    "deep_breathing": "slow_4_6",
+    "4-7-8 呼吸法": "four_seven_eight",
+    "4-4-4-4 方形呼吸": "box_breathing",
+    "深呼吸練習": "slow_4_6",
     "focus_breathing": "equal_5_5",
 }
 
