@@ -41,14 +41,14 @@ SCENE_MAPPING = {
 
 BREATHING_MAPPING = {
     # Unity: 4-7-8
-    "4-7-8 呼吸法": "four_seven_eight",
+    "4-7-8 呼吸法": "4-7-8 呼吸法",
 
     # Unity: 4-4-4-4
-    "4-4-4-4 方形呼吸": "box_breathing",
+    "4-4-4-4 方形呼吸": "4-4-4-4 方形呼吸",
 
     # Unity: 4-2-6-2
     # 推薦系統目前歸類為慢呼吸
-    "深呼吸練習": "slow_4_6",
+    "深呼吸練習": "深呼吸練習",
 
     # Unity: 5-5
     "focus_breathing": "equal_5_5",

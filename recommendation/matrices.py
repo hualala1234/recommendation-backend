@@ -233,30 +233,30 @@ SCENE_GOAL_MATRIX = {
 BREATHING_STATE_MATRIX = {
 
     "stressed": {
-        "four_seven_eight": 0.65,
-        "box_breathing": 1.00,
-        "slow_4_6": 0.85,
+        "4-7-8 呼吸法": 0.65,
+        "4-4-4-4 方形呼吸": 1.00,
+        "深呼吸練習": 0.85,
         "equal_5_5": 0.65,
     },
 
     "fatigued": {
-        "four_seven_eight": 0.85,
-        "box_breathing": 0.55,
-        "slow_4_6": 1.00,
+        "4-7-8 呼吸法": 0.85,
+        "4-4-4-4 方形呼吸": 0.55,
+        "深呼吸練習": 1.00,
         "equal_5_5": 0.75,
     },
 
     "overthinking": {
-        "four_seven_eight": 0.55,
-        "box_breathing": 1.00,
-        "slow_4_6": 0.85,
+        "4-7-8 呼吸法": 0.55,
+        "4-4-4-4 方形呼吸": 1.00,
+        "深呼吸練習": 0.85,
         "equal_5_5": 0.75,
     },
 
     "calm": {
-        "four_seven_eight": 0.65,
-        "box_breathing": 0.65,
-        "slow_4_6": 0.85,
+        "4-7-8 呼吸法": 0.65,
+        "4-4-4-4 方形呼吸": 0.65,
+        "深呼吸練習": 0.85,
         "equal_5_5": 1.00,
     },
 }
@@ -269,37 +269,37 @@ BREATHING_STATE_MATRIX = {
 BREATHING_GOAL_MATRIX = {
 
     "relax": {
-        "four_seven_eight": 0.85,
-        "box_breathing": 0.65,
-        "slow_4_6": 1.00,
+        "4-7-8 呼吸法": 0.85,
+        "4-4-4-4 方形呼吸": 0.65,
+        "深呼吸練習": 1.00,
         "equal_5_5": 0.75,
     },
 
     "focus": {
-        "four_seven_eight": 0.45,
-        "box_breathing": 1.00,
-        "slow_4_6": 0.65,
+        "4-7-8 呼吸法": 0.45,
+        "4-4-4-4 方形呼吸": 1.00,
+        "深呼吸練習": 0.65,
         "equal_5_5": 0.85,
     },
 
     "mental_reset": {
-        "four_seven_eight": 0.65,
-        "box_breathing": 0.85,
-        "slow_4_6": 1.00,
+        "4-7-8 呼吸法": 0.65,
+        "4-4-4-4 方形呼吸": 0.85,
+        "深呼吸練習": 1.00,
         "equal_5_5": 0.75,
     },
 
     "sleep_prepare": {
-        "four_seven_eight": 1.00,
-        "box_breathing": 0.45,
-        "slow_4_6": 0.85,
+        "4-7-8 呼吸法": 1.00,
+        "4-4-4-4 方形呼吸": 0.45,
+        "深呼吸練習": 0.85,
         "equal_5_5": 0.65,
     },
 
     "self_soothe": {
-        "four_seven_eight": 0.75,
-        "box_breathing": 0.65,
-        "slow_4_6": 1.00,
+        "4-7-8 呼吸法": 0.75,
+        "4-4-4-4 方形呼吸": 0.65,
+        "深呼吸練習": 1.00,
         "equal_5_5": 0.85,
     },
 }
