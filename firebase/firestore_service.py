@@ -678,6 +678,13 @@ SCENE_MAPPING = {
     "小麥田": "field",
 }
 
+MEDITATION_GOAL_NAME_MAPPING = {
+    "relax": "放鬆",
+    "focus": "專注",
+    "mental_reset": "放空",
+    "sleep": "睡眠",
+    "self_compassion": "自我療癒",
+}
 
 # Recommendation ID -> Firestore Scene Name
 SCENE_ID_TO_NAME = {
@@ -795,6 +802,61 @@ def save_session_recommendation(
         SCENE_ID_TO_NAME[
             scene_id
         ]
+    )
+
+    # =====================================================
+    # Meditation Name
+    # =====================================================
+
+    second_assessment = (
+        session_data.get(
+            "secondAssessment",
+            {}
+        )
+    )
+
+    if not isinstance(
+        second_assessment,
+        dict
+    ):
+        raise ValueError(
+            "Session 缺少 secondAssessment"
+        )
+
+
+    desired_outcome = (
+        second_assessment.get(
+            "desiredOutcome"
+        )
+    )
+
+    if not desired_outcome:
+        raise ValueError(
+            "secondAssessment 缺少 desiredOutcome"
+        )
+
+
+    if (
+        desired_outcome
+        not in
+        MEDITATION_GOAL_NAME_MAPPING
+    ):
+        raise ValueError(
+            f"未知 desiredOutcome：{desired_outcome}"
+        )
+
+
+    goal_name = (
+        MEDITATION_GOAL_NAME_MAPPING[
+            desired_outcome
+        ]
+    )
+
+
+    meditation_name = (
+        scene_name
+        + goal_name
+        + "冥想"
     )
 
 
@@ -943,9 +1005,9 @@ def save_session_recommendation(
 
     update_data = {
 
-        # -------------------------------------------------
+        # =================================================
         # Meditation Recommendation
-        # -------------------------------------------------
+        # =================================================
 
         "sceneName":
             scene_name,
@@ -956,10 +1018,13 @@ def save_session_recommendation(
         "technique":
             technique,
 
+        "meditationName":
+            meditation_name,
 
-        # -------------------------------------------------
-        # Guidance Resolution
-        # -------------------------------------------------
+
+        # =================================================
+        # Guidance
+        # =================================================
 
         "secondAssessment.resolvedGuidance":
             resolved_guidance,
@@ -971,18 +1036,9 @@ def save_session_recommendation(
             resolved_history_key,
 
 
-        # -------------------------------------------------
-        # Recommendation 完成時間
-        # -------------------------------------------------
-
         "recommendationUpdatedAt":
             firestore.SERVER_TIMESTAMP,
     }
-
-
-    session_ref.update(
-        update_data
-    )
 
 
     # =====================================================
@@ -1001,6 +1057,9 @@ def save_session_recommendation(
 
         "breathingMode":
             breathing_mode,
+
+        "meditationName":
+            meditation_name,
 
         "technique":
             technique,
