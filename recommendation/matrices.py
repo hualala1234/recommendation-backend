@@ -44,7 +44,7 @@ SCENE_BASELINE_MATRIX = {
 
 BREATHING_BASELINE_MATRIX = {
 
-    "four_seven_eight": {
+    "4-7-8 呼吸法": {
         "stress": 0.65,
         "sleep": 1.00,
         "bodyFatigue": 0.85,
@@ -52,7 +52,7 @@ BREATHING_BASELINE_MATRIX = {
         "cognitiveLoad": 0.55,
     },
 
-    "box_breathing": {
+    "4-4-4-4 方形呼吸": {
         "stress": 1.00,
         "sleep": 0.45,
         "bodyFatigue": 0.55,
@@ -60,7 +60,7 @@ BREATHING_BASELINE_MATRIX = {
         "cognitiveLoad": 1.00,
     },
 
-    "slow_4_6": {
+    "深呼吸練習": {
         "stress": 0.85,
         "sleep": 0.85,
         "bodyFatigue": 1.00,
