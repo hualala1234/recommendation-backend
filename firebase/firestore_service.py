@@ -1040,6 +1040,14 @@ def save_session_recommendation(
             firestore.SERVER_TIMESTAMP,
     }
 
+    # =====================================================
+    # 真的寫入 Firestore Session
+    # =====================================================
+
+    session_ref.update(
+        update_data
+    )
+
 
     # =====================================================
     # 10. Response
